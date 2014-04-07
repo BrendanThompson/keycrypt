@@ -1,0 +1,76 @@
+#!/bin/sh
+
+KEYNAME=$1
+KEYPATH=$2
+
+##########################################################################################
+
+function removeKey() {
+	local KEY=$1
+
+	rm -rf $KEY
+
+	echo '$KEY was deleted.'
+}
+
+function createKey() {
+	local KEY=$1
+	local TYPE
+	local BITS
+	local OUTPUT_DIR
+	local COMMENT
+	local COMMAND='ssh-keygen '
+
+	## ssh-keygen -t $TYPE -b $BITS -C $COMMENT -f $OUTPUT_DIR
+
+	echo -n 'What key type (RSA/DSA)? '
+	read $TYPE
+
+	if [[ $TYPE == "RSA" ]]; then
+		$COMMAND=$COMMAND '-t RSA'
+	elif [[ $TYPE == "DSA" ]]; then
+			$COMMAND=$COMMAND '-t DSA'
+	else
+		echo 'This is not a valide type!'
+	fi
+
+	echo -n 'Bit size (1024/2048/4096/8192)? '
+	read $BITS
+
+	if [[ $BITS == '1024' ]]; then
+		$BITS=$BITS ' -b 1024'
+	elif [[ $BITS == '2048' ]]; then
+			$BITS=$BITS ' -b 2048'
+	elif [[ $BITS == '4096' ]]; then
+			$BITS=$BITS ' -b 4096'
+	elif [[ $BITS == '8196' ]]; then
+			$BITS=$BITS ' -b 8196'
+	fi
+}
+
+function checkKeyExistence() {
+	local KEY=$2$1
+
+	if [[ -f $KEY ]]; then
+		echo '$1 exists in $2'
+		echo -n 'Would you like to remove [y/n]: '
+		read USERINPUT
+
+		case $USER in
+			[yY] | [yY][eE][sS] )
+				removeKey $KEY
+				;;
+			[nN] | [nN][oO] )
+				echo '$KEY was not deleted. Will now exit.'
+				;;
+			* )
+				echo 'Invalid Input.'
+				;;
+		esac
+	else
+		echo 'Key does not currently exist will now create.'
+		createKey
+	fi
+}
+
+##########################################################################################
