@@ -159,6 +159,7 @@ case $1 in
 		;;
 	[vV][eE][rR][sS][iI][oO][nN] | [vV] | [vV][eE][rR] )
 		echo "keygen v$VERSION"
+		;;
 	* )
 		echo 'Invalid Option'
 		;;
