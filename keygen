@@ -1,8 +1,9 @@
 #!/bin/bash
 
-KEYNAME=$1
-KEYPATH=$2
-TMP_PASS="-N bubbl3s"
+# KEYNAME=$1
+# KEYPATH=$2
+TMP_PASS="bubbl3s"
+OLD_KEY=""
 
 ##########################################################################################
 
@@ -19,12 +20,56 @@ function removeKey() {
 	
 }
 
+function backupKey() {
+	local KEY=$1
+	local COMMAND="mv $KEY $KEY.bak"
+	
+	if [[ -f $KEY ]]; then
+		$COMMAND
+	else
+		echo "$KEY doesn't exist"
+		exit 0
+	fi
+	
+	if [[ -f "$KEY.bak" ]]; then
+		OLD_KEY="$KEY.bak"
+		echo "Backed up key here: $OLD_KEY"
+	else
+		echo "Something went wrong"
+	fi
+}
+
+function encryptKey() {
+	local KEY=$1
+	local COMMAND='openssl pkcs8 -topk8 -v2 des3'
+	local PASS=""
+	local CONFIRM_PASS=""
+	
+	read -s -p "Password: " PASS
+	echo ""
+	read -s -p "Confirm Password: " CONFIRM_PASS
+	echo""
+	
+	if [[ "$PASS" == "$CONFIRM_PASS" ]]; then
+		echo "Passwords Match!"
+		backupKey $KEY
+		
+		COMMAND="$COMMAND -in $OLD_KEY -passin 'pass:bubbl3s' -out $KEY -passout 'pass:$PASS'"
+		
+		$COMMAND
+	else
+		echo "Password don't match"
+	fi
+	
+}
+
 function createKey() {
 	local KEY=$1
 	local TYPE
 	local BITS
 	local OUTPUT_DIR
 	local COMMENT
+	local PASS="-N $TMP_PASS"
 	local COMMAND='ssh-keygen'
 
 	## ssh-keygen -t $TYPE -b $BITS -C $COMMENT -f $OUTPUT_DIR
@@ -55,11 +100,11 @@ function createKey() {
 		echo 'Invalid bit size.'
 	fi
 	
-	echo -n "Output Directory: "
-	read OUTPUT_DIR
-	OUTPUT_DIR="-f $OUTPUT_DIR"
+	# echo -n "Output Directory: "
+	# read OUTPUT_DIR
+	OUTPUT_DIR="-f $KEY"
 	
-	COMMAND="$COMMAND $TYPE $BITS $OUTPUT_DIR $TMP_PASS"
+	COMMAND="$COMMAND $TYPE $BITS $OUTPUT_DIR $PASS"
 	# echo "$OUTPUT_DIR"
 	$COMMAND
 }
@@ -72,7 +117,7 @@ function checkKeyExistence() {
 		echo -n 'Would you like to remove [y/n]: '
 		read USERINPUT
 
-		case $USER in
+		case $USERINPUT in
 			[yY] | [yY][eE][sS] )
 				removeKey $KEY
 				;;
@@ -91,4 +136,20 @@ function checkKeyExistence() {
 
 ##########################################################################################
 
-createKey
+# createKey
+
+case $1 in
+	"hello" )
+		echo "Hello, $2"
+		;;
+	[tT][eE][sS][tT] )
+		encryptKey $2
+		;;
+	[cC][rR][eE][aA][tT][eE] )
+		createKey $2
+		encryptKey $2
+		;;
+	* )
+		echo 'Invalid Option'
+		;;
+esac
