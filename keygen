@@ -1,10 +1,16 @@
 #!/bin/bash
 
+##########################################################################################
+#################################    Global Variables    #################################
+##########################################################################################
+
 VERSION="0.0.1"
 TMP_PASS="bubbl3s"
 GKEY=""
 OLD_KEY=""
 
+##########################################################################################
+##################################    Main Functions    ##################################
 ##########################################################################################
 
 function defaultKeyLocation() {
@@ -25,10 +31,7 @@ function removeKey() {
 		echo '$KEY was deleted.'
 	else
 		echo 'Whoops'
-	fi
-	
-
-	
+	fi	
 }
 
 function backupKey() {
@@ -71,7 +74,6 @@ function encryptKey() {
 		echo "Passwords Match!"
 		backupKey $KEY
 		
-		# COMMAND="$COMMAND -in $OLD_KEY -passin 'pass:$TMP_PASS' -out $KEY -passout 'pass:$PASS'"
 		COMMAND="$COMMAND -in $OLD_KEY -passin pass:$TMP_PASS -out $KEY -passout pass:$PASS 1> /dev/null"
 		$COMMAND
 		fixPermissions $KEY
@@ -89,8 +91,6 @@ function createKey() {
 	local COMMENT
 	local PASS="-N $TMP_PASS"
 	local COMMAND='ssh-keygen'
-
-	## ssh-keygen -t $TYPE -b $BITS -C $COMMENT -f $OUTPUT_DIR
 
 	echo -n 'What key type (RSA/DSA)? '
 	read TYPE
@@ -118,12 +118,10 @@ function createKey() {
 		echo 'Invalid bit size.'
 	fi
 	
-	# echo -n "Output Directory: "
-	# read OUTPUT_DIR
 	OUTPUT_DIR="-f $KEY"
 	
 	COMMAND="$COMMAND $TYPE $BITS $OUTPUT_DIR $PASS"
-	# echo "$OUTPUT_DIR"
+	
 	$COMMAND 1> /dev/null
 }
 
@@ -153,6 +151,8 @@ function checkKeyExistence() {
 	fi
 }
 
+##########################################################################################
+##################################      Entry Point     ##################################
 ##########################################################################################
 
 case $1 in
