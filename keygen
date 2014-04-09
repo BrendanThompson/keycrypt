@@ -151,6 +151,47 @@ function checkKeyExistence() {
 	fi
 }
 
+function exportKey() {
+	local KEY=$GKEY
+	local PUBKEY="$GKEY.pub"
+	local ID=""
+	local SERVER=""
+	local PORT=""
+	local COMMAND=""
+
+	echo -n "Remote Server (user@server:port): "
+	read SERVER
+
+	SERVER="$(cut -d ":" -f 1 <<< $SERVER)"
+	PORT="$(cut -d ":" -f 2 <<< $SERVER)"
+
+	if [[ -f $PUBKEY ]]	; then
+		if [ x$SSH_AUTH_SOCK != x ] ; then
+    		GET_ID="$GET_ID ssh-add -L | grep -vxF 'The agent has no identities.'"
+  		fi
+	else
+		echo "The key supplied doesn't exist."
+	fi
+
+}
+
+function usage() {
+	cat <<EOF
+Usage
+------
+
+create 		This will create a new key and then encrypt it.
+			You should supply a keyname and/or path.
+encrypt 	This will encrypt a pre-existing key.
+			Supply the path to the key.
+
+---------------------------------------------------------
+
+By default keygen will insert the key into ~/.ssh
+
+EOF
+}
+
 ##########################################################################################
 ##################################      Entry Point     ##################################
 ##########################################################################################
@@ -174,6 +215,9 @@ case $1 in
 		;;
 	[vV][eE][rR][sS][iI][oO][nN] | [vV] | [vV][eE][rR] )
 		echo "keygen v$VERSION"
+		;;
+	[hH][eE][lL][pP] | "?" | [hH] )
+		usage
 		;;
 	* )
 		echo 'Invalid Option'
