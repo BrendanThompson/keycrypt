@@ -2,9 +2,21 @@
 
 VERSION="0.0.1"
 TMP_PASS="bubbl3s"
+GKEY=""
 OLD_KEY=""
 
 ##########################################################################################
+
+function defaultKeyLocation() {
+	local KEY=$1
+	local default="/Users/$(whoami)/.ssh/"
+	
+	if [[ $KEY == *\/* ]] || [[ $KEY == *\\* ]]; then
+		GKEY=$KEY
+	else
+		GKEY="$default$KEY"
+	fi
+}
 
 function removeKey() {
 	local KEY=$1
@@ -148,11 +160,13 @@ case $1 in
 		echo "Hello, $2"
 		;;
 	[tT][eE][sS][tT] )
-		encryptKey $2
+		defaultKeyLocation $2
+		echo "$GKEY"
 		;;
 	[cC][rR][eE][aA][tT][eE] )
-		checkKeyExistence $2
-		encryptKey $2
+		defaultKeyLocation $2
+		checkKeyExistence $GKEY
+		encryptKey $GKEY
 		;;
 	[eE][nN][cC][rR][yY][pP][tT] | [eE][nN][cC])
 		encryptKey $2
