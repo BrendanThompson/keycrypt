@@ -169,6 +169,7 @@ case $1 in
 		encryptKey $GKEY
 		;;
 	[eE][nN][cC][rR][yY][pP][tT] | [eE][nN][cC])
+		defaultKeyLocation $2
 		encryptKey $2
 		;;
 	[vV][eE][rR][sS][iI][oO][nN] | [vV] | [vV][eE][rR] )
