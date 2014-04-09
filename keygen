@@ -1,7 +1,6 @@
 #!/bin/bash
 
-# KEYNAME=$1
-# KEYPATH=$2
+VERSION="0.0.1"
 TMP_PASS="bubbl3s"
 OLD_KEY=""
 
@@ -39,6 +38,12 @@ function backupKey() {
 	fi
 }
 
+function fixPermissions() {
+	local KEY=$1
+	local COMMAND="chmod 600 $KEY"
+	$COMMAND
+}
+
 function encryptKey() {
 	local KEY=$1
 	local COMMAND='openssl pkcs8 -topk8 -v2 des3'
@@ -54,9 +59,10 @@ function encryptKey() {
 		echo "Passwords Match!"
 		backupKey $KEY
 		
-		COMMAND="$COMMAND -in $OLD_KEY -passin 'pass:bubbl3s' -out $KEY -passout 'pass:$PASS'"
-		
+		# COMMAND="$COMMAND -in $OLD_KEY -passin 'pass:$TMP_PASS' -out $KEY -passout 'pass:$PASS'"
+		COMMAND="$COMMAND -in $OLD_KEY -passin pass:$TMP_PASS -out $KEY -passout pass:$PASS 1> /dev/null"
 		$COMMAND
+		fixPermissions $KEY
 	else
 		echo "Password don't match"
 	fi
@@ -106,14 +112,14 @@ function createKey() {
 	
 	COMMAND="$COMMAND $TYPE $BITS $OUTPUT_DIR $PASS"
 	# echo "$OUTPUT_DIR"
-	$COMMAND
+	$COMMAND 1> /dev/null
 }
 
 function checkKeyExistence() {
-	local KEY=$2$1
+	local KEY=$1
 
 	if [[ -f $KEY ]]; then
-		echo '$1 exists in $2'
+		echo '$1 exists'
 		echo -n 'Would you like to remove [y/n]: '
 		read USERINPUT
 
@@ -123,6 +129,7 @@ function checkKeyExistence() {
 				;;
 			[nN] | [nN][oO] )
 				echo '$KEY was not deleted. Will now exit.'
+				exit 1
 				;;
 			* )
 				echo 'Invalid Input.'
@@ -130,13 +137,11 @@ function checkKeyExistence() {
 		esac
 	else
 		echo 'Key does not currently exist will now create.'
-		createKey
+		createKey $KEY
 	fi
 }
 
 ##########################################################################################
-
-# createKey
 
 case $1 in
 	"hello" )
@@ -146,9 +151,14 @@ case $1 in
 		encryptKey $2
 		;;
 	[cC][rR][eE][aA][tT][eE] )
-		createKey $2
+		checkKeyExistence $2
 		encryptKey $2
 		;;
+	[eE][nN][cC][rR][yY][pP][tT] | [eE][nN][cC])
+		encryptKey $2
+		;;
+	[vV][eE][rR][sS][iI][oO][nN] | [vV] | [vV][eE][rR] )
+		echo "keygen v$VERSION"
 	* )
 		echo 'Invalid Option'
 		;;
