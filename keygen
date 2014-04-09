@@ -1,16 +1,22 @@
-#!/bin/sh
+#!/bin/bash
 
 KEYNAME=$1
 KEYPATH=$2
+TMP_PASS="-N bubbl3s"
 
 ##########################################################################################
 
 function removeKey() {
 	local KEY=$1
 
-	rm -rf $KEY
+	if [[ $(rm -rf $KEY) ]]; then
+		echo '$KEY was deleted.'
+	else
+		echo 'Whoops'
+	fi
+	
 
-	echo '$KEY was deleted.'
+	
 }
 
 function createKey() {
@@ -19,33 +25,43 @@ function createKey() {
 	local BITS
 	local OUTPUT_DIR
 	local COMMENT
-	local COMMAND='ssh-keygen '
+	local COMMAND='ssh-keygen'
 
 	## ssh-keygen -t $TYPE -b $BITS -C $COMMENT -f $OUTPUT_DIR
 
 	echo -n 'What key type (RSA/DSA)? '
-	read $TYPE
+	read TYPE
 
-	if [[ $TYPE == "RSA" ]]; then
-		$COMMAND=$COMMAND '-t RSA'
-	elif [[ $TYPE == "DSA" ]]; then
-			$COMMAND=$COMMAND '-t DSA'
+	if [[ $TYPE == [rR][sS][aA] ]]; then
+		TYPE=' -t RSA'
+	elif [[ $TYPE == [dD][sS][aA] ]]; then
+		TYPE=' -t DSA'
 	else
 		echo 'This is not a valide type!'
 	fi
 
 	echo -n 'Bit size (1024/2048/4096/8192)? '
-	read $BITS
+	read BITS
 
 	if [[ $BITS == '1024' ]]; then
-		$BITS=$BITS ' -b 1024'
+		BITS=' -b 1024'
 	elif [[ $BITS == '2048' ]]; then
-			$BITS=$BITS ' -b 2048'
+		BITS=' -b 2048'
 	elif [[ $BITS == '4096' ]]; then
-			$BITS=$BITS ' -b 4096'
-	elif [[ $BITS == '8196' ]]; then
-			$BITS=$BITS ' -b 8196'
+		BITS=' -b 4096'
+	elif [[ $BITS == '8192' ]]; then
+		BITS=' -b 8192'
+	else
+		echo 'Invalid bit size.'
 	fi
+	
+	echo -n "Output Directory: "
+	read OUTPUT_DIR
+	OUTPUT_DIR="-f $OUTPUT_DIR"
+	
+	COMMAND="$COMMAND $TYPE $BITS $OUTPUT_DIR $TMP_PASS"
+	# echo "$OUTPUT_DIR"
+	$COMMAND
 }
 
 function checkKeyExistence() {
@@ -74,3 +90,5 @@ function checkKeyExistence() {
 }
 
 ##########################################################################################
+
+createKey
