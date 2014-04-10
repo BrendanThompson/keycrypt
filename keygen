@@ -183,7 +183,7 @@ function copyPubKey() {
   		if [[ -r "${PUBKEY}" ]] ; then
   			ID="cat ${PUBKEY}"
   		else
-  			echo "$PUBKEY is not readble."
+  			echo "$PUBKEY is not readable."
 		fi
 	else
 		echo "The key supplied doesn't exist."
