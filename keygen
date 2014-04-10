@@ -4,7 +4,7 @@
 #################################    Global Variables    #################################
 ##########################################################################################
 
-VERSION="0.0.1"
+VERSION="0.0.2"
 TMP_PASS="bubbl3s"
 GKEY=""
 OLD_KEY=""
@@ -26,11 +26,15 @@ function defaultKeyLocation() {
 
 function removeKey() {
 	local KEY=$1
+	local COMMAND="rm -rf $KEY"
 
-	if [[ $(rm -rf $KEY) ]]; then
-		echo '$KEY was deleted.'
+	if [[ -w $KEY ]]; then
+		$COMMAND
+		echo "$KEY was deleted."
+		createKey $KEY
 	else
 		echo 'Whoops'
+		exit 1
 	fi	
 }
 
@@ -101,6 +105,7 @@ function createKey() {
 		TYPE=' -t DSA'
 	else
 		echo 'This is not a valide type!'
+		exit 1
 	fi
 
 	echo -n 'Bit size (1024/2048/4096/8192)? '
@@ -116,6 +121,7 @@ function createKey() {
 		BITS=' -b 8192'
 	else
 		echo 'Invalid bit size.'
+		exit 1
 	fi
 	
 	OUTPUT_DIR="-f $KEY"
@@ -129,7 +135,7 @@ function checkKeyExistence() {
 	local KEY=$1
 
 	if [[ -f $KEY ]]; then
-		echo '$1 exists'
+		echo "$KEY exists"
 		echo -n 'Would you like to remove [y/n]: '
 		read USERINPUT
 
@@ -138,17 +144,92 @@ function checkKeyExistence() {
 				removeKey $KEY
 				;;
 			[nN] | [nN][oO] )
-				echo '$KEY was not deleted. Will now exit.'
+				echo "$KEY was not deleted. Will now exit."
 				exit 1
 				;;
 			* )
 				echo 'Invalid Input.'
+				exit 1
 				;;
 		esac
 	else
 		echo 'Key does not currently exist will now create.'
 		createKey $KEY
 	fi
+}
+
+function copyPubKey() {
+	local KEY=$1
+	local PUBKEY="$GKEY.pub"
+	local ID=""
+	local SERVER=""
+	local PORT=""
+	local COMMAND="ssh "
+	local PARAMS=""
+
+	echo -n "Remote Server (user@server:port): "
+	read SERVER
+
+	if [[ $SERVER == *:* ]]; then
+		SERVER="$(cut -d ":" -f 1 <<< $SERVER)"
+		PORT="$(cut -d ":" -f 2 <<< $SERVER)"
+
+		PARAMS="$SERVER -p $PORT"
+	else
+		PARAMS="$SERVER"
+	fi
+
+	if [[ -f $PUBKEY ]]	; then
+  		if [[ -r "${PUBKEY}" ]] ; then
+  			ID="cat ${PUBKEY}"
+  		else
+  			echo "$PUBKEY is not readble."
+		fi
+	else
+		echo "The key supplied doesn't exist."
+	fi
+
+	{ eval "$ID" ; } | ssh $PARAMS "umask 077; test -d .ssh || mkdir .ssh ; cat >> .ssh/authorized_keys; test -x /sbin/restorecon && /sbin/restorecon .ssh .ssh/authorized_keys" || exit 1
+}
+
+function askCopyPubKey() {
+	local KEY=$1
+
+	echo -n "Would you like to copy this key (y/n)? "
+	read INPUT
+
+	case $INPUT in
+		[yY][eE][sS] | [yY] )
+			copyPubKey $KEY
+			;;
+		[nN][oO] | [nN] )
+			exit 1
+			;;
+		* )
+			echo "Invalid Option"
+			exit 1
+			;;
+	esac
+}
+
+function usage() {
+	cat <<EOF
+Usage
+------
+
+create (cr) 		This will create a new key and then encrypt it.
+					You should supply a keyname and/or path.
+
+encrypt (enc)		This will encrypt a pre-existing key.
+					Supply the path to the key.
+
+copy (cp)			Copies the inputted ID to a prompted server.
+
+---------------------------------------------------------
+
+By default keygen will insert the key into ~/.ssh
+
+EOF
 }
 
 ##########################################################################################
@@ -163,17 +244,25 @@ case $1 in
 		defaultKeyLocation $2
 		echo "$GKEY"
 		;;
-	[cC][rR][eE][aA][tT][eE] )
+	[cC][rR][eE][aA][tT][eE] | [cC][rR] )
 		defaultKeyLocation $2
 		checkKeyExistence $GKEY
 		encryptKey $GKEY
+		askCopyPubKey $GKEY
 		;;
 	[eE][nN][cC][rR][yY][pP][tT] | [eE][nN][cC])
 		defaultKeyLocation $2
 		encryptKey $2
 		;;
+	[cC][oO][pP][yY] | [cC][pP] )
+		defaultKeyLocation $2
+		copyPubKey $GKEY
+		;;
 	[vV][eE][rR][sS][iI][oO][nN] | [vV] | [vV][eE][rR] )
 		echo "keygen v$VERSION"
+		;;
+	[hH][eE][lL][pP] | "?" | [hH] )
+		usage
 		;;
 	* )
 		echo 'Invalid Option'
