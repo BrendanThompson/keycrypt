@@ -4,7 +4,7 @@
 #################################    Global Variables    #################################
 ##########################################################################################
 
-VERSION="0.0.2"
+VERSION="0.1.0"
 TMP_PASS="bubbl3s"
 GKEY=""
 OLD_KEY=""
@@ -86,6 +86,32 @@ function encryptKey() {
 		echo "Password don't match"
 	fi
 	
+}
+
+function reencryptKey() {
+	local KEY=$1
+	local COMMAND='openssl pkcs8 -topk8 -v2 des3'
+	local PASS=""
+	local CONFIRM_PASS=""
+	local CURRENT_PASS=""
+	
+	read -s -p "Current Password: " CURRENT_PASS
+	echo ""
+	read -s -p "Password: " PASS
+	echo ""
+	read -s -p "Confirm Password: " CONFIRM_PASS
+	echo""
+	
+	if [[ "$PASS" == "$CONFIRM_PASS" ]]; then
+		echo "Passwords Match!"
+		backupKey $KEY
+		
+		COMMAND="$COMMAND -in $OLD_KEY -passin pass:$CURRENT_PASS -out $KEY -passout pass:$PASS 1> /dev/null"
+		$COMMAND
+		fixPermissions $KEY
+	else
+		echo "Password don't match"
+	fi
 }
 
 function createKey() {
@@ -241,28 +267,28 @@ case $1 in
 	"hello" )
 		echo "Hello, $2"
 		;;
-	[tT][eE][sS][tT] )
+	[tT][eE][sS][tT] ) #test
 		defaultKeyLocation $2
 		echo "$GKEY"
 		;;
-	[cC][rR][eE][aA][tT][eE] | [cC][rR] )
+	[cC][rR][eE][aA][tT][eE] | [cC][rR] ) #create
 		defaultKeyLocation $2
 		checkKeyExistence $GKEY
 		encryptKey $GKEY
 		askCopyPubKey $GKEY
 		;;
-	[eE][nN][cC][rR][yY][pP][tT] | [eE][nN][cC])
+	[eE][nN][cC][rR][yY][pP][tT] | [eE][nN][cC]) #encrypt
 		defaultKeyLocation $2
-		encryptKey $2
+		reencryptKey $GKEY
 		;;
-	[cC][oO][pP][yY] | [cC][pP] )
+	[cC][oO][pP][yY] | [cC][pP] ) #copy
 		defaultKeyLocation $2
 		copyPubKey $GKEY
 		;;
-	[vV][eE][rR][sS][iI][oO][nN] | [vV] | [vV][eE][rR] )
+	[vV][eE][rR][sS][iI][oO][nN] | [vV] | [vV][eE][rR] ) #version
 		echo "keygen v$VERSION"
 		;;
-	[hH][eE][lL][pP] | "?" | [hH] )
+	[hH][eE][lL][pP] | "?" | [hH] ) #help
 		usage
 		;;
 	* )
