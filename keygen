@@ -15,7 +15,8 @@ OLD_KEY=""
 
 function defaultKeyLocation() {
 	local KEY=$1
-	local default="/Users/$(whoami)/.ssh/"
+	local default="$HOME/.ssh/"
+
 	
 	if [[ $KEY == *\/* ]] || [[ $KEY == *\\* ]]; then
 		GKEY=$KEY
