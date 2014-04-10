@@ -1,4 +1,4 @@
-keygen
+keycrypt
 ======
 
 Generate new SSH key and Encrypt with OpenSSL
