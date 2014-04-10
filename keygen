@@ -26,11 +26,15 @@ function defaultKeyLocation() {
 
 function removeKey() {
 	local KEY=$1
+	local COMMAND="rm -rf $KEY"
 
-	if [[ $(rm -rf $KEY) ]]; then
-		echo '$KEY was deleted.'
+	if [[ -w $KEY ]]; then
+		$COMMAND
+		echo "$KEY was deleted."
+		createKey $KEY
 	else
 		echo 'Whoops'
+		exit 1
 	fi	
 }
 
@@ -101,6 +105,7 @@ function createKey() {
 		TYPE=' -t DSA'
 	else
 		echo 'This is not a valide type!'
+		exit 1
 	fi
 
 	echo -n 'Bit size (1024/2048/4096/8192)? '
@@ -116,6 +121,7 @@ function createKey() {
 		BITS=' -b 8192'
 	else
 		echo 'Invalid bit size.'
+		exit 1
 	fi
 	
 	OUTPUT_DIR="-f $KEY"
@@ -129,7 +135,7 @@ function checkKeyExistence() {
 	local KEY=$1
 
 	if [[ -f $KEY ]]; then
-		echo '$1 exists'
+		echo "$KEY exists"
 		echo -n 'Would you like to remove [y/n]: '
 		read USERINPUT
 
@@ -138,11 +144,12 @@ function checkKeyExistence() {
 				removeKey $KEY
 				;;
 			[nN] | [nN][oO] )
-				echo '$KEY was not deleted. Will now exit.'
+				echo "$KEY was not deleted. Will now exit."
 				exit 1
 				;;
 			* )
 				echo 'Invalid Input.'
+				exit 1
 				;;
 		esac
 	else
