@@ -157,22 +157,34 @@ function exportKey() {
 	local ID=""
 	local SERVER=""
 	local PORT=""
-	local COMMAND=""
+	local COMMAND="ssh "
+	local PARAMS=""
 
 	echo -n "Remote Server (user@server:port): "
 	read SERVER
 
-	SERVER="$(cut -d ":" -f 1 <<< $SERVER)"
-	PORT="$(cut -d ":" -f 2 <<< $SERVER)"
+	if [[ $SERVER == *:* ]]; then
+		SERVER="$(cut -d ":" -f 1 <<< $SERVER)"
+		PORT="$(cut -d ":" -f 2 <<< $SERVER)"
+
+		PARAMS="$SERVER -p $PORT"
+	else
+		PARAMS="$SERVER"
+	fi
 
 	if [[ -f $PUBKEY ]]	; then
-		if [ x$SSH_AUTH_SOCK != x ] ; then
-    		GET_ID="$GET_ID ssh-add -L | grep -vxF 'The agent has no identities.'"
-  		fi
+  		if [[ -r "${PUBKEY}" ]] ; then
+  			ID="cat ${PUBKEY}"
+  		else
+  			echo "$PUBKEY is not readble."
+		fi
 	else
 		echo "The key supplied doesn't exist."
 	fi
 
+	# COMMAND="$COMMAND "
+
+	{ eval "$ID" ; } | ssh $PARAMS "umask 077; test -d .ssh || mkdir .ssh ; cat >> .ssh/authorized_keys; test -x /sbin/restorecon && /sbin/restorecon .ssh .ssh/authorized_keys" || exit 1
 }
 
 function usage() {
@@ -203,6 +215,7 @@ case $1 in
 	[tT][eE][sS][tT] )
 		defaultKeyLocation $2
 		echo "$GKEY"
+		exportKey $GKEY
 		;;
 	[cC][rR][eE][aA][tT][eE] )
 		defaultKeyLocation $2
