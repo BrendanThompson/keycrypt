@@ -246,7 +246,8 @@ function checkApplicationInstalled() {
 }
 
 function generatePassword() {
-	TMP_PASS=$(openssl rand -base64 128)
+	TMP_PASS=$(openssl rand -base64 48)
+	
 }
 
 function usage() {
@@ -282,7 +283,7 @@ case $1 in
 		echo "Hello, $2"
 		;;
 	[tT][eE][sS][tT] ) #test
-		checkApplicationInstalled "foo"
+		echo "$TMP_PASS"
 		;;
 	[cC][rR][eE][aA][tT][eE] | [cC][rR] ) #create
 		defaultKeyLocation $2
