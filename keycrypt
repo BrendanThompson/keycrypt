@@ -5,7 +5,7 @@
 ##########################################################################################
 
 VERSION="0.1.0"
-TMP_PASS="bubbl3s"
+TMP_PASS=""
 GKEY=""
 OLD_KEY=""
 
@@ -239,6 +239,10 @@ function askCopyPubKey() {
 	esac
 }
 
+function generatePassword() {
+	TMP_PASS=$(openssl rand -base64 128)
+}
+
 function usage() {
 	cat <<EOF
 Usage
@@ -263,13 +267,14 @@ EOF
 ##################################      Entry Point     ##################################
 ##########################################################################################
 
+generatePassword
+
 case $1 in
 	"hello" )
 		echo "Hello, $2"
 		;;
 	[tT][eE][sS][tT] ) #test
-		defaultKeyLocation $2
-		echo "$GKEY"
+		echo "$TMP_PASS"
 		;;
 	[cC][rR][eE][aA][tT][eE] | [cC][rR] ) #create
 		defaultKeyLocation $2
