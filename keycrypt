@@ -4,8 +4,8 @@
 #################################    Global Variables    #################################
 ##########################################################################################
 
-VERSION="0.1.0"
-TMP_PASS="bubbl3s"
+VERSION="0.1.1"
+TMP_PASS=""
 GKEY=""
 OLD_KEY=""
 
@@ -239,6 +239,16 @@ function askCopyPubKey() {
 	esac
 }
 
+function checkApplicationInstalled() {
+	local APP=$1
+	
+	command -v $APP >/dev/null 2>&1 || { echo >&2 "I require $APP but it's not installed.  Aborting."; exit 1; }
+}
+
+function generatePassword() {
+	TMP_PASS=$(openssl rand -base64 128)
+}
+
 function usage() {
 	cat <<EOF
 Usage
@@ -263,13 +273,16 @@ EOF
 ##################################      Entry Point     ##################################
 ##########################################################################################
 
+checkApplicationInstalled "openssl"
+generatePassword
+
+
 case $1 in
 	"hello" )
 		echo "Hello, $2"
 		;;
 	[tT][eE][sS][tT] ) #test
-		defaultKeyLocation $2
-		echo "$GKEY"
+		checkApplicationInstalled "foo"
 		;;
 	[cC][rR][eE][aA][tT][eE] | [cC][rR] ) #create
 		defaultKeyLocation $2
