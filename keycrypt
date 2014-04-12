@@ -64,6 +64,18 @@ function fixPermissions() {
 	$COMMAND
 }
 
+function checkEncryptionStatus() {
+	local KEY=$1
+	
+	if [[ -n $(grep -i "Proc-Type: 4,ENCRYPTED" $KEY) ]]; then
+		return 1
+	elif [[ -n $(grep -i "BEGIN ENCRYPTED PRIVATE KEY" $KEY) ]]; then
+		return 1
+	else
+		return 0
+	fi
+}
+
 function encryptKey() {
 	local KEY=$1
 	local COMMAND='openssl pkcs8 -topk8 -v2 des3'
@@ -95,8 +107,15 @@ function reencryptKey() {
 	local CONFIRM_PASS=""
 	local CURRENT_PASS=""
 	
-	read -s -p "Current Password: " CURRENT_PASS
-	echo ""
+	res=$(checkEncryptionStatus $KEY)
+	
+	if [[ $? == 1 ]]; then
+		read -s -p "Current Password: " CURRENT_PASS
+		echo ""
+	else
+		echo "No encryption on current key."
+	fi	
+	
 	read -s -p "Password: " PASS
 	echo ""
 	read -s -p "Confirm Password: " CONFIRM_PASS
@@ -283,7 +302,7 @@ case $1 in
 		echo "Hello, $2"
 		;;
 	[tT][eE][sS][tT] ) #test
-		echo "$TMP_PASS"
+		
 		;;
 	[cC][rR][eE][aA][tT][eE] | [cC][rR] ) #create
 		defaultKeyLocation $2
