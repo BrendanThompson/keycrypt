@@ -42,9 +42,29 @@ function removeKey() {
 function backupKey() {
 	local KEY=$1
 	local COMMAND="mv $KEY $KEY.bak"
+	local res=""
 	
 	if [[ -f $KEY ]]; then
-		$COMMAND
+		if [[ -f "$KEY.bak" ]]; then
+			echo -n "Backup exists, overwrite (y/n): "
+			read res
+			
+			case $res in
+				[yY][eE][sS] | [yY] )
+				   	$(rm -rf $KEY.bak)
+				   	$COMMAND
+					;;
+				[nN][oO] | [nN] )
+					echo "Nothing to be done."
+					exit 1
+					;;
+				* )
+					echo "Invalid Selection"
+					exit 1
+					;;
+			esac
+		fi
+
 	else
 		echo "$KEY doesn't exist"
 		exit 0
@@ -116,7 +136,7 @@ function reencryptKey() {
 		echo "No encryption on current key."
 	fi	
 	
-	read -s -p "Password: " PASS
+	read -s -p "New Password: " PASS
 	echo ""
 	read -s -p "Confirm Password: " CONFIRM_PASS
 	echo""
