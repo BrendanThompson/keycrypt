@@ -42,9 +42,29 @@ function removeKey() {
 function backupKey() {
 	local KEY=$1
 	local COMMAND="mv $KEY $KEY.bak"
+	local res=""
 	
 	if [[ -f $KEY ]]; then
-		$COMMAND
+		if [[ -f "$KEY.bak" ]]; then
+			echo -n "Backup exists, overwrite (y/n): "
+			read res
+			
+			case $res in
+				[yY][eE][sS] | [yY] )
+				   	$(rm -rf $KEY.bak)
+				   	$COMMAND
+					;;
+				[nN][oO] | [nN] )
+					echo "Nothing to be done."
+					exit 1
+					;;
+				* )
+					echo "Invalid Selection"
+					exit 1
+					;;
+			esac
+		fi
+
 	else
 		echo "$KEY doesn't exist"
 		exit 0
@@ -62,6 +82,18 @@ function fixPermissions() {
 	local KEY=$1
 	local COMMAND="chmod 600 $KEY"
 	$COMMAND
+}
+
+function checkEncryptionStatus() {
+	local KEY=$1
+	
+	if [[ -n $(grep -i "Proc-Type: 4,ENCRYPTED" $KEY) ]]; then
+		return 1
+	elif [[ -n $(grep -i "BEGIN ENCRYPTED PRIVATE KEY" $KEY) ]]; then
+		return 1
+	else
+		return 0
+	fi
 }
 
 function encryptKey() {
@@ -95,9 +127,16 @@ function reencryptKey() {
 	local CONFIRM_PASS=""
 	local CURRENT_PASS=""
 	
-	read -s -p "Current Password: " CURRENT_PASS
-	echo ""
-	read -s -p "Password: " PASS
+	res=$(checkEncryptionStatus $KEY)
+	
+	if [[ $? == 1 ]]; then
+		read -s -p "Current Password: " CURRENT_PASS
+		echo ""
+	else
+		echo "No encryption on current key."
+	fi	
+	
+	read -s -p "New Password: " PASS
 	echo ""
 	read -s -p "Confirm Password: " CONFIRM_PASS
 	echo""
@@ -283,7 +322,7 @@ case $1 in
 		echo "Hello, $2"
 		;;
 	[tT][eE][sS][tT] ) #test
-		echo "$TMP_PASS"
+		
 		;;
 	[cC][rR][eE][aA][tT][eE] | [cC][rR] ) #create
 		defaultKeyLocation $2
