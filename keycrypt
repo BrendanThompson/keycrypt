@@ -304,7 +304,7 @@ copy (cp)			Copies the inputted ID to a prompted server.
 
 ---------------------------------------------------------
 
-By default keygen will insert the key into ~/.ssh
+By default keycrypt will insert the key into ~/.ssh
 
 EOF
 }
