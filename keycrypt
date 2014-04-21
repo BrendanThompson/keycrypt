@@ -63,6 +63,8 @@ function backupKey() {
 					exit 1
 					;;
 			esac
+		else
+			$COMMAND
 		fi
 
 	else
