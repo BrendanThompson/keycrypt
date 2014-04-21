@@ -204,7 +204,7 @@ function checkKeyExistence() {
 
 	if [[ -f $KEY ]]; then
 		echo "$KEY exists"
-		echo -n 'Would you like to remove [y/n]: '
+		echo -n 'Would you like to remove (y/n): '
 		read USERINPUT
 
 		case $USERINPUT in
@@ -226,22 +226,34 @@ function checkKeyExistence() {
 	fi
 }
 
+function checkCopiedPubKey() {
+	local PUBKEY=$(cat $1)
+	local PARAMS=$2
+	local AUTHORIZED_KEYS
+	
+	if [[ -n $(ssh $PARAMS "grep '$PUBKEY' $HOME/.ssh/authorized_keys") ]]; then
+		echo 'Public Key copied!'
+	else
+		echo "Key did not copy correctly!"
+	fi
+}
+
 function copyPubKey() {
 	local KEY=$1
 	local PUBKEY="$GKEY.pub"
 	local ID=""
 	local SERVER=""
 	local PORT=""
-	local COMMAND="ssh "
 	local PARAMS=""
 
 	echo -n "Remote Server (user@server:port): "
 	read SERVER
-
+	
 	if [[ $SERVER == *:* ]]; then
-		SERVER="$(cut -d ":" -f 1 <<< $SERVER)"
+		
 		PORT="$(cut -d ":" -f 2 <<< $SERVER)"
-
+		SERVER="$(cut -d ":" -f 1 <<< $SERVER)"
+		
 		PARAMS="$SERVER -p $PORT"
 	else
 		PARAMS="$SERVER"
@@ -256,8 +268,8 @@ function copyPubKey() {
 	else
 		echo "The key supplied doesn't exist."
 	fi
-
-	{ eval "$ID" ; } | ssh $PARAMS "umask 077; test -d .ssh || mkdir .ssh ; cat >> .ssh/authorized_keys; test -x /sbin/restorecon && /sbin/restorecon .ssh .ssh/authorized_keys" || exit 1
+	
+	{ eval "$ID" ; } | ssh $PARAMS "umask 077; test -d .ssh || mkdir .ssh ; cat >> .ssh/authorized_keys; test -x /sbin/restorecon && /sbin/restorecon .ssh .ssh/authorized_keys" || checkCopiedPubKey $PUBKEY $PARAMS
 }
 
 function askCopyPubKey() {
