@@ -43,9 +43,9 @@ function backupKey() {
 	local KEY=$1
 	local COMMAND="mv $KEY $KEY.bak"
 	local res=""
-	
-	if [[ -f $KEY ]]; then
-		if [[ -f "$KEY.bak" ]]; then
+		
+	if [[ -e $KEY ]]; then
+		if [[ -e "$KEY.bak" ]]; then
 			echo -n "Backup exists, overwrite (y/n): "
 			read res
 			
