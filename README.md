@@ -1,6 +1,5 @@
 #keycrypt
 
-![](http://img.shields.io/github/release/BrendanThompson/keycrypt.svg?style=flat)
 
 _keycrypt_ is a wrapper for generating __SSH Keys__ and then encrypting them with __OpenSSL__. _keycrypt_ offers other features like copying the pubkey from your local machine to a remote host. This can even be done as part of the create step!
 
