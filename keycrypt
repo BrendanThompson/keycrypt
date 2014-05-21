@@ -4,7 +4,7 @@
 #################################    Global Variables    #################################
 ##########################################################################################
 
-VERSION="0.2.0"
+VERSION="0.2.1"
 TMP_PASS=""
 GKEY=""
 OLD_KEY=""
@@ -353,8 +353,12 @@ case $1 in
 		copyPubKey $GKEY
 		;;
 	[vV][eE][rR][sS][iI][oO][nN] | [vV] | [vV][eE][rR] ) #version
-		echo "keygen v$VERSION"
+		echo "keygen $VERSION"
 		;;
+    [cC][oO][pP][yY] | [cC][pP] )
+        defaultKeyLocation $2
+        copyPubKey $GKEY
+        ;;
 	[hH][eE][lL][pP] | "?" | [hH] ) #help
 		usage
 		;;
