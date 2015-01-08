@@ -113,8 +113,8 @@ function encryptKey() {
 		echo "Passwords Match!"
 		backupKey $KEY
 		
-		COMMAND="$COMMAND -in $OLD_KEY -passin pass:$TMP_PASS -out $KEY -passout pass:$PASS 1> /dev/null"
-		$COMMAND
+		COMMAND="$COMMAND -in $OLD_KEY -passin pass:$TMP_PASS -out $KEY -passout stdin 1> /dev/null"
+		echo $PASS | $COMMAND
 		fixPermissions $KEY
 	else
 		echo "Password don't match"
@@ -147,8 +147,12 @@ function reencryptKey() {
 		echo "Passwords Match!"
 		backupKey $KEY
 		
-		COMMAND="$COMMAND -in $OLD_KEY -passin pass:$CURRENT_PASS -out $KEY -passout pass:$PASS 1> /dev/null"
-		$COMMAND
+		COMMAND="$COMMAND -in $OLD_KEY -passin stdin -out $KEY -passout stdin 1> /dev/null"
+		$COMMAND << EOF
+$CURRENT_PASS
+$PASS
+EOF
+
 		fixPermissions $KEY
 	else
 		echo "Password don't match"
