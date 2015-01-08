@@ -4,7 +4,7 @@
 #################################    Global Variables    #################################
 ##########################################################################################
 
-VERSION="0.2.1"
+VERSION="0.2.2"
 TMP_PASS=""
 GKEY=""
 OLD_KEY=""
@@ -168,9 +168,9 @@ function createKey() {
 	read TYPE
 
 	if [[ $TYPE == [rR][sS][aA] ]]; then
-		TYPE=' -t RSA'
+		TYPE=' -t rsa'
 	elif [[ $TYPE == [dD][sS][aA] ]]; then
-		TYPE=' -t DSA'
+		TYPE=' -t dsa'
 	else
 		echo 'This is not a valide type!'
 		exit 1
