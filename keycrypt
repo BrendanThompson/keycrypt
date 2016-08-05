@@ -17,6 +17,12 @@ function defaultKeyLocation() {
 	local KEY=$1
 	local default="$HOME/.ssh/"
 
+	if [ "$KEY" = "" ]
+	then
+		# didn't provide a key name
+		echo -n "What key file name: "
+		read KEY
+	fi
 	
 	if [[ $KEY == *\/* ]] || [[ $KEY == *\\* ]]; then
 		GKEY=$KEY
