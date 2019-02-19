@@ -1,18 +1,18 @@
-#keycrypt
+# keycrypt
 
 
 _keycrypt_ is a wrapper for generating __SSH Keys__ and then encrypting them with __OpenSSL__. _keycrypt_ offers other features like copying the pubkey from your local machine to a remote host. This can even be done as part of the create step!
 
-####Current Features
+#### Current Features
 - SSH Key Creation
 - SSH Key Encryption with OpenSSL
 - Copying PubKey to Remote Server (similar to [ssh-copy-id](http://linux.die.net/man/1/ssh-copy-id))
 
-####Future Features
+#### Future Features
 - Improved PubKey Copying
 - Scanning for unencrypted keys and prompting for encryption
 
-###Why would I need this?
+### Why would I need this?
 
 The default encryption that ships with SSH isn't the most secure, it comprises of the following:
 
@@ -26,6 +26,6 @@ From this it was devised that we could get a higher level of security from using
 
 
 ---
-###Credits
+### Credits
 
-This idea was fostered from an article written by [Martin Kleppmann](http://martin.kleppmann.com/2013/05/24/improving-security-of-ssh-private-keys.html)
+This idea was fostered from an article written by [Martin Kleppmann](https://martin.kleppmann.com/2013/05/24/improving-security-of-ssh-private-keys.html)
